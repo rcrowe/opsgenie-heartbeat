@@ -63,7 +63,7 @@ func TestCombatsFlakyConnection(t *testing.T) {
 	var calls uint32
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		atomic.AddUint32(&calls, 1)
-		if atomic.LoadUint32(&calls) < 3 {
+		if c := atomic.LoadUint32(&calls); c < 3 {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
