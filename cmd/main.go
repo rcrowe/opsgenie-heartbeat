@@ -9,12 +9,12 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 2 {
-		exit("incorrect usage of `opsgenie-heartbeat`. Must include heartbeat name as only arg.\n")
+	if len(os.Args) != 3 {
+		exit("incorrect usage of `opsgenie-heartbeat`. Must include api key & heartbeat name as the only args.\n")
 	}
 
 	hb := heartbeat.New(os.Args[1])
-	if err := hb.Ping(context.Background()); err != nil {
+	if err := hb.Ping(context.Background(), os.Args[2]); err != nil {
 		exit("failed to send heartbeat: %s", err)
 	}
 }
