@@ -11,12 +11,7 @@ import (
 	"github.com/sethgrid/pester"
 )
 
-const (
-	// EnvAPIKey is the environmental name that contains the opsgenie api key
-	EnvAPIKey = "OPSGENIE_HEARTBEAT_KEY"
-
-	defaultEndpoint = "https://api.opsgenie.com"
-)
+const defaultEndpoint = "https://api.opsgenie.com"
 
 var (
 	// ErrUnauthorised signafies an invalid api key
