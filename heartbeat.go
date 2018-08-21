@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -30,8 +29,6 @@ var (
 type PingRequest struct {
 	// APIKey used to talk to the API
 	APIKey string
-	// Heartbeat is the name of the heartbeat to ping
-	Heartbeat string
 
 	Endpoint string
 	Client   HTTPClient
@@ -43,7 +40,7 @@ type HTTPClient interface {
 }
 
 // New creates a PingRequest with a default HTTP client and API key from env variable
-func New(name string) PingRequest {
+func New(key string) PingRequest {
 	client := pester.New()
 	client.Timeout = 10 * time.Second
 	client.Concurrency = 3
@@ -51,16 +48,15 @@ func New(name string) PingRequest {
 	client.Backoff = pester.ExponentialJitterBackoff
 
 	return PingRequest{
-		APIKey:    os.Getenv(EnvAPIKey),
-		Heartbeat: name,
-		Endpoint:  defaultEndpoint,
-		Client:    client,
+		APIKey:   key,
+		Endpoint: defaultEndpoint,
+		Client:   client,
 	}
 }
 
 // Ping performs a HTTP request to the Opsgenie Heartbeat Ping endpoint
-func (r PingRequest) Ping(ctx context.Context) error {
-	url := fmt.Sprintf("%s/v2/heartbeats/%s/ping", strings.TrimRight(r.Endpoint, "/"), r.Heartbeat)
+func (r PingRequest) Ping(ctx context.Context, heartbeat string) error {
+	url := fmt.Sprintf("%s/v2/heartbeats/%s/ping", strings.TrimRight(r.Endpoint, "/"), heartbeat)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err

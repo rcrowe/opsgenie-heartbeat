@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"sync/atomic"
 	"testing"
 
@@ -16,10 +15,7 @@ import (
 func TestKeySet(t *testing.T) {
 	expected := "some random key"
 
-	os.Setenv(heartbeat.EnvAPIKey, expected)
-	defer os.Setenv(heartbeat.EnvAPIKey, "")
-
-	hb := heartbeat.New("foo")
+	hb := heartbeat.New(expected)
 	if hb.APIKey != expected {
 		t.Fail()
 	}
@@ -35,10 +31,9 @@ func TestKeyHeader(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	hb := heartbeat.New("foo")
-	hb.APIKey = expected
+	hb := heartbeat.New(expected)
 	hb.Endpoint = srv.URL
-	hb.Ping(context.Background())
+	hb.Ping(context.Background(), "foo")
 }
 
 func TestCorrectEndpoint(t *testing.T) {
@@ -54,9 +49,9 @@ func TestCorrectEndpoint(t *testing.T) {
 	srv := httptest.NewServer(m)
 	defer srv.Close()
 
-	hb := heartbeat.New(expected)
+	hb := heartbeat.New("")
 	hb.Endpoint = srv.URL
-	hb.Ping(context.Background())
+	hb.Ping(context.Background(), expected)
 }
 
 func TestCombatsFlakyConnection(t *testing.T) {
@@ -71,10 +66,10 @@ func TestCombatsFlakyConnection(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	hb := heartbeat.New("some-heartbeat")
+	hb := heartbeat.New("")
 	hb.Endpoint = srv.URL
 
-	if err := hb.Ping(context.Background()); err != nil {
+	if err := hb.Ping(context.Background(), "some-heartbeat"); err != nil {
 		t.Fail()
 	}
 }
@@ -85,10 +80,10 @@ func TestUnauthorised(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	hb := heartbeat.New("foo")
+	hb := heartbeat.New("")
 	hb.Endpoint = srv.URL
 
-	if err := hb.Ping(context.Background()); err != heartbeat.ErrUnauthorised {
+	if err := hb.Ping(context.Background(), "foo"); err != heartbeat.ErrUnauthorised {
 		t.Fail()
 	}
 }
@@ -99,7 +94,7 @@ func TestBadResponse(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	hb := heartbeat.New("foo")
+	hb := heartbeat.New("")
 	hb.Endpoint = srv.URL
 
 	client := pester.New()
@@ -107,7 +102,7 @@ func TestBadResponse(t *testing.T) {
 	client.MaxRetries = 1
 	hb.Client = client
 
-	if err := hb.Ping(context.Background()); err != heartbeat.ErrNonOkStatusCode {
+	if err := hb.Ping(context.Background(), "foo"); err != heartbeat.ErrNonOkStatusCode {
 		t.Fail()
 	}
 }
