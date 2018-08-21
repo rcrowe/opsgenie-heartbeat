@@ -7,9 +7,7 @@ it's more involved to use & I wanted the underlying HTTP GET requests to be more
 
 ## Usage
 
-The opsgenie API key comes from the env variable `OPSGENIE_HEARTBEAT_KEY`.
-
 ```golang
-hb := heartbeat.New("name-of-the-heartbeat")
-hb.Ping()
+hb := heartbeat.New("api-key")
+hb.Ping(context.Background(), "name-of-the-heartbeat")
 ```
